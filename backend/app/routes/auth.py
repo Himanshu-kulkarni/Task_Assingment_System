@@ -6,6 +6,8 @@ from app.models import User
 from app.database import get_db
 from app.utils.security import hash_password
 
+from fastapi import HTTPException
+
 router = APIRouter()
 
 @router.post("/register")
@@ -13,6 +15,16 @@ def register_user(
     user: UserCreate,
     db: Session = Depends(get_db)
 ):
+
+    existing_user = db.query(User).filter(
+        User.email == user.email
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
     
     hashed_password = hash_password(user.password)
 
