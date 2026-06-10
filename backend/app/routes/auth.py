@@ -92,7 +92,12 @@ def login_user(
 
 @router.get("/me")
 def get_me(
-    current_user=Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
 
-    return current_user
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role
+    }
