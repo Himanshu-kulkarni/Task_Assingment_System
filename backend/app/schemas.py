@@ -9,3 +9,13 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class DepartmentCreate(BaseModel):
+    name: str
+    description: str
+    lead_id: int
+
+class DepartmentCreate(BaseModel):
+    name: str
+    description: str
+    lead_id: int
