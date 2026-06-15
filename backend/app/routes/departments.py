@@ -109,3 +109,39 @@ def get_department_members(
     ).all()
 
     return members
+
+@router.post("/departments/{department_id}/assign-lead/{user_id}")
+def assign_department_lead(
+    department_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("PRESIDENT"))
+):
+    department = db.query(Department).filter(
+        Department.id == department_id
+    ).first()
+
+    if not department:
+        raise HTTPException(
+            status_code=404,
+            detail="Department not found"
+        )
+    
+    user = db.query(User).filter(
+        User.id == user_id
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+    
+    department.lead_id = user.id
+
+    db.commit()
+    db.refresh(department)
+
+    return {
+        "message": "Department lead assigned successfully"
+    }
