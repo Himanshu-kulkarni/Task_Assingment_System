@@ -8,7 +8,7 @@ from app.utils.security import verify_token
 
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User
+from app.models import User, Department
 
 security = HTTPBearer()
 
@@ -56,3 +56,33 @@ def require_role(required_roles: list):
         return current_user
 
     return role_checker
+
+def require_department_lead():
+
+    def lead_checker(
+        department_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+    ):
+        #Querry the department
+        department = db.query(Department).filter(
+            Department.id == department_id
+        ).first()
+
+        #check if department exists.
+        if not department:
+            raise HTTPException(
+                status_code=404,
+                detail="Department not found"
+            )
+        
+        #check lead permissions
+        if department.lead_id != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Only department lead can access this"
+            )
+        
+        return current_user
+
+    return lead_checker

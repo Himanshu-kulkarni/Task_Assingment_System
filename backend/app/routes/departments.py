@@ -7,6 +7,7 @@ from app.schemas import DepartmentCreate
 from app.schemas import UserResponse
 from app.dependencies import require_role
 from app.dependencies import get_current_user
+from app.dependencies import require_department_lead
 
 
 router = APIRouter()
@@ -144,4 +145,13 @@ def assign_department_lead(
 
     return {
         "message": "Department lead assigned successfully"
+    }
+
+@router.get("/departments/{department_id}/dashboard")
+def department_dashboard(
+    department_id: int,
+    current_user: User = Depends(require_department_lead())
+):
+    return {
+        "message": "Welcome Department Lead"
     }
