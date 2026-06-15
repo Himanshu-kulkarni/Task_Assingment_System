@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models import User, Department
 from app.schemas import DepartmentCreate
 from app.dependencies import require_role
+from app.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -33,4 +34,13 @@ def create_department(
     return {
         "message": "Department Created Successfully"
     }
+
+@router.get("/departments")
+def get_departments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    departments = db.query(Department).all()
+
+    return departments
     

@@ -15,7 +15,11 @@ class DepartmentCreate(BaseModel):
     description: str
     lead_id: int
 
-class DepartmentCreate(BaseModel):
+class DepartmentResponse(BaseModel):
+    id: int
     name: str
     description: str
     lead_id: int
+
+    class Config:
+        from_attributes = True
