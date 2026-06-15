@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User, Department
 from app.schemas import DepartmentCreate
+from app.schemas import UserResponse
 from app.dependencies import require_role
 from app.dependencies import get_current_user
 
@@ -43,4 +44,68 @@ def get_departments(
     departments = db.query(Department).all()
 
     return departments
+
+
+@router.post("/departments/{department_id}/assign-user/{user_id}")
+def assign_user_to_department(
+    department_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(["PRESIDENT", "VICE_PRESIDENT"])
+    )
+):
+    department = db.query(Department).filter(
+        Department.id == department_id
+    ).first()
+
+    if not department:
+        raise HTTPException(
+            status_code=404,
+            detail="Department not found"
+        )
     
+    user = db.query(User).filter(
+        User.id == user_id
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+    
+    user.department_id = department_id
+
+    db.commit()
+    db.refresh(user)
+
+    return {
+        "message": "User assigned successfully"
+    }
+
+
+@router.get(
+    "/departments/{department_id}/members",
+    response_model=list[UserResponse]
+)
+def get_department_members(
+    department_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    department = db.query(Department).filter(
+        Department.id == department_id
+    ).first()
+
+    if not department:
+        raise HTTPException(
+            status_code=404,
+            detail="Department not found"
+        )
+    
+    members = db.query(User).filter(
+        User.department_id == department_id
+    ).all()
+
+    return members

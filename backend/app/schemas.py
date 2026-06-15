@@ -10,6 +10,16 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    role: str
+    department_id: int | None
+
+    class Config:
+        from_attributes = True
+
 class DepartmentCreate(BaseModel):
     name: str
     description: str

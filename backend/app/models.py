@@ -19,6 +19,8 @@ class User(Base):
 
     role = Column(String, default="MEMBER")
 
+    department_id = Column(Integer, nullable=True)
+
 class Department(Base):
     __tablename__ = "departments"
 
