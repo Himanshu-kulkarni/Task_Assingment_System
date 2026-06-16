@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from jose import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import os
 from dotenv import load_dotenv
 from jose import JWTError
@@ -31,7 +31,7 @@ def create_access_token(data: dict):
 
     to_encode = data.copy()
 
-    expire = datetime.utcnow() + timedelta(hours=1)
+    expire = datetime.now(UTC) + timedelta(hours=1)
 
     to_encode.update({
         "exp": expire

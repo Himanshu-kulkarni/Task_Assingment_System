@@ -1,4 +1,6 @@
 from pydantic import BaseModel, EmailStr
+from datetime import datetime, UTC
+from enum import Enum
 
 
 class UserCreate(BaseModel):
@@ -33,3 +35,31 @@ class DepartmentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TaskCreate(BaseModel):
+    title: str
+    description: str
+    deadline: datetime
+    assigned_to : int
+
+class TaskResponse(BaseModel):
+    id : int
+    title : str
+    description: str
+    status: str
+    created_at: datetime
+    deadline: datetime
+    assigned_to : int
+    assigned_by : int
+    department_id : int
+
+    class config:
+        from_attributes = True
+
+class TaskStatus(str, Enum):
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+
+class TaskStatusUpdate(BaseModel):
+    status: TaskStatus

@@ -9,6 +9,7 @@ from app.utils.security import verify_token
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, Department
+from typing import List
 
 security = HTTPBearer()
 
@@ -41,7 +42,7 @@ def get_current_user(
     return user
 
 
-def require_role(required_roles: list):
+def require_role(required_roles: list[str]):
 
     def role_checker(
         current_user: User = Depends(get_current_user)
