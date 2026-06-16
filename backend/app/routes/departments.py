@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User, Department
+from app.models import User, Department, Task
+from app.roles import UserRole
 from app.schemas import DepartmentCreate
 from app.schemas import UserResponse
 from app.dependencies import require_role
@@ -150,8 +151,114 @@ def assign_department_lead(
 @router.get("/departments/{department_id}/dashboard")
 def department_dashboard(
     department_id: int,
-    current_user: User = Depends(require_department_lead())
+    current_user: User = Depends(require_role(["PRESIDENT", "VICE_PRESIDENT", "DEPARTMENT_LEAD"])),
+    db: Session = Depends(get_db)
 ):
+    if (
+        current_user.role == UserRole.DEPARTMENT_LEAD
+        and current_user.department_id != department_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You can only access your own department dashboard"
+        )
+
+    department = db.query(Department).filter(
+        Department.id == department_id
+    ).first()
+
+    if not department:
+        raise HTTPException(
+            status_code=404,
+            detail="Department not found"
+        )
+    
+    total_members = db.query(User).filter(
+        User.department_id == department_id
+    ).count()
+
+    total_tasks = db.query(Task).filter(
+        Task.department_id == department_id
+    ).count()
+
+    pending_tasks = db.query(Task).filter(
+        Task.department_id == department_id,
+        Task.status == "PENDING"
+    ).count()
+
+    completed_tasks = db.query(Task).filter(
+        Task.department_id == department_id,
+        Task.status == "COMPLETED"
+    ).count()
+
+    in_progress_tasks = db.query(Task).filter(
+        Task.department_id == department_id,
+        Task.status == "IN_PROGRESS"
+    ).count()
+
     return {
-        "message": "Welcome Department Lead"
+        "department_id": department.id,
+        "department_name": department.name,
+        "lead_id": department.lead_id,
+
+        "total_members": total_members,
+        "total_tasks": total_tasks,
+
+        "pending_tasks": pending_tasks,
+        "in_progress_tasks": in_progress_tasks,
+        "completed_tasks": completed_tasks
+    }
+
+@router.get("/dashboard/president")
+def president_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(["PRESIDENT", "VICE_PRESIDENT"])
+    )
+):
+    total_departments = db.query(Department).count()
+    total_users = db.query(User).count()
+    total_tasks = db.query(Task).count()
+
+    pending_tasks = db.query(Task).filter(
+        Task.status == "PENDING"
+    ).count()
+
+    completed_tasks = db.query(Task).filter(
+        Task.status == "COMPLETED"
+    ).count()
+
+    in_progress_tasks = db.query(Task).filter(
+        Task.status == "IN_PROGRESS"
+    ).count()
+
+    department_stats = []
+
+    departments = db.query(Department).all()
+
+    for department in departments:
+        members = db.query(User).filter(
+            User.department_id == department.id
+        ).count()
+
+        tasks = db.query(Task).filter(
+            Task.department_id == department.id
+        ).count()
+
+        department_stats.append({
+            "department_id": department.id,
+            "department_name": department.name,
+            "members": members,
+            "tasks": tasks
+        })
+
+    return {
+        "total_departments": total_departments,
+        "total_users": total_users,
+        "total_tasks": total_tasks,
+
+        "pending_tasks": pending_tasks,
+        "in_progress_tasks": in_progress_tasks,
+        "completed_tasks": completed_tasks,
+        "departments": department_stats
     }

@@ -103,14 +103,3 @@ def get_me(
         "email": current_user.email,
         "role": current_user.role
     }
-
-
-@router.get("/president-only")
-def president_only(
-    current_user: User = Depends(
-        require_role("PRESIDENT")
-    )
-):
-    return {
-        "message": "Welcome President"
-    }

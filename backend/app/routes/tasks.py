@@ -26,7 +26,10 @@ def create_task(
     if not assigned_user:
         raise HTTPException(status_code=404, detail="Assigned user not found")
     
-    if assigned_user.department_id != current_user.department_id:
+    if (
+        current_user.role == UserRole.DEPARTMENT_LEAD
+        and assigned_user.department_id != current_user.department_id
+    ):
         raise HTTPException(
             status_code=400,
             detail="User does not belong to your department"
@@ -72,3 +75,14 @@ def update_task_status(
     db.commit()
     db.refresh(task)
     return task
+
+@router.get(
+    "/tasks/created-by-me",
+    response_model=list[TaskResponse]
+)
+def get_tasks_created_by_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    tasks = db.query(Task).filter(Task.assigned_by == current_user.id).all()
+    return tasks
