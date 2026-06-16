@@ -262,3 +262,30 @@ def president_dashboard(
         "completed_tasks": completed_tasks,
         "departments": department_stats
     }
+
+@router.get("/departments/{department_id}/members", response_model=list[UserResponse])
+def get_department_members(
+    department_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role([
+            "PRESIDENT",
+            "VICE_PRESIDENT",
+            "DEPARTMENT_LEAD"
+        ])
+    )
+):
+    if (
+        current_user.role == UserRole.DEPARTMENT_LEAD
+        and current_user.department_id != department_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You can only view your own department members"
+        )
+    
+    members = db.query(User).filter(
+        User.department_id == department_id
+    ).all()
+
+    return members

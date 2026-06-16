@@ -49,6 +49,31 @@ def create_task(
     db.refresh(new_task)
     return new_task
 
+@router.get("/tasks/{task_id}", response_model=TaskResponse)
+def get_task(
+    task_id: int,
+    db : Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    if (
+        current_user.role not in [
+            UserRole.PRESIDENT,
+            UserRole.VICE_PRESIDENT
+        ]
+        and task.assigned_to != current_user.id
+        and task.assigned_by != current_user.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to view this task"
+        )
+    
+    return task
+
 @router.get("/tasks/my-tasks", response_model = list[TaskResponse])
 def get_my_tasks(
     db : Session = Depends(get_db),
@@ -86,3 +111,38 @@ def get_tasks_created_by_me(
 ):
     tasks = db.query(Task).filter(Task.assigned_by == current_user.id).all()
     return tasks
+
+@router.delete(
+    "/tasks/{task_id}"
+)
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role([
+            "PRESIDENT",
+            "VICE_PRESIDENT",
+            "DEPARTMENT_LEAD"
+        ])
+    )
+):
+    
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    if (
+        current_user.role not in [
+            UserRole.PRESIDENT,
+            UserRole.VICE_PRESIDENT
+        ]
+        and task.assigned_by != current_user.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to delete this task"
+        )
+
+    db.delete(task)
+    db.commit()
+    return {"message": "Task deleted successfully"}
