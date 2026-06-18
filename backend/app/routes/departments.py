@@ -13,6 +13,10 @@ from app.dependencies import require_department_lead
 
 router = APIRouter()
 
+# Creates a new department in the club.
+# Only PRESIDENT and VICE_PRESIDENT can create departments.
+# Stores department name, description, and optional lead.
+
 @router.post("/departments")
 def create_department(
     department: DepartmentCreate,
@@ -38,6 +42,9 @@ def create_department(
         "message": "Department Created Successfully"
     }
 
+# Returns a list of all departments.
+# Any authenticated user can view departments.
+
 @router.get("/departments")
 def get_departments(
     db: Session = Depends(get_db),
@@ -47,6 +54,9 @@ def get_departments(
 
     return departments
 
+# Assigns a user to a specific department.
+# Only PRESIDENT and VICE_PRESIDENT can perform this action.
+# Updates the user's department_id.
 
 @router.post("/departments/{department_id}/assign-user/{user_id}")
 def assign_user_to_department(
@@ -86,6 +96,8 @@ def assign_user_to_department(
         "message": "User assigned successfully"
     }
 
+# Returns all members belonging to a department.
+# Validates that the department exists before fetching users.
 
 @router.get(
     "/departments/{department_id}/members",
@@ -111,6 +123,10 @@ def get_department_members(
     ).all()
 
     return members
+
+# Assigns a department lead.
+# Only the PRESIDENT can promote a user as department lead.
+# Updates the department's lead_id.
 
 @router.post("/departments/{department_id}/assign-lead/{user_id}")
 def assign_department_lead(
@@ -147,6 +163,16 @@ def assign_department_lead(
     return {
         "message": "Department lead assigned successfully"
     }
+
+# Department dashboard endpoint.
+# PRESIDENT and VICE_PRESIDENT can access any department dashboard.
+# DEPARTMENT_LEAD can access only their own department dashboard.
+# Returns department statistics such as:
+# - Total members
+# - Total tasks
+# - Pending tasks
+# - In-progress tasks
+# - Completed tasks
 
 @router.get("/departments/{department_id}/dashboard")
 def department_dashboard(
@@ -209,6 +235,15 @@ def department_dashboard(
         "completed_tasks": completed_tasks
     }
 
+# President dashboard endpoint.
+# Accessible by PRESIDENT and VICE_PRESIDENT.
+# Provides organization-wide statistics including:
+# - Total departments
+# - Total users
+# - Total tasks
+# - Task status breakdown
+# - Per-department statistics
+
 @router.get("/dashboard/president")
 def president_dashboard(
     db: Session = Depends(get_db),
@@ -262,6 +297,10 @@ def president_dashboard(
         "completed_tasks": completed_tasks,
         "departments": department_stats
     }
+
+# Returns members of a department.
+# PRESIDENT and VICE_PRESIDENT can view any department.
+# DEPARTMENT_LEAD can view only members of their own department.
 
 @router.get("/departments/{department_id}/members", response_model=list[UserResponse])
 def get_department_members(
