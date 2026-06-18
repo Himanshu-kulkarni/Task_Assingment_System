@@ -1,3 +1,24 @@
+"""
+Authentication Module
+
+Responsibilities:
+- User Registration
+- User Login
+- JWT Token Generation
+- Current User Profile Retrieval
+
+Security Features:
+- Password Hashing
+- Password Verification
+- JWT Authentication
+- Protected User Information
+
+Endpoints:
+- POST /register
+- POST /login
+- GET /me
+"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -17,6 +38,17 @@ from app.dependencies import require_role
 
 router = APIRouter()
 
+# Registers a new user in the system.
+#
+# Business Rules:
+# - Email must be unique.
+# - Password is hashed before storage.
+# - Creates a new user record in the database.
+#
+# Returns:
+# - Success message
+# - Newly created user ID
+
 @router.post("/register")
 def register_user(
     user: UserCreate,
@@ -33,6 +65,8 @@ def register_user(
             detail="Email already registered"
         )
     
+    # Never store plain-text passwords in the database.
+    # Passwords are securely hashed before being saved.
     hashed_password = hash_password(user.password)
 
     new_user = User(
@@ -52,13 +86,24 @@ def register_user(
         "user_id": new_user.id
     }
 
+# Authenticates a user and generates a JWT access token.
+#
+# Authentication Flow:
+# 1. Verify email exists.
+# 2. Verify password matches stored hash.
+# 3. Generate JWT token.
+# 4. Return access token to client.
+#
+# Returns:
+# - JWT access token
+# - Token type
 
 @router.post("/login")
 def login_user(
     user: UserLogin,
     db: Session = Depends(get_db)
 ):
-    
+    # Check if a user exists with the provided email.
     existing_user = db.query(User).filter(
         User.email == user.email
     ).first()
@@ -69,6 +114,7 @@ def login_user(
             detail="Invalid email or password"
         )
 
+    # Compare the provided password with the stored password hash.
     is_valid = verify_password(
         user.password,
         existing_user.password_hash
@@ -80,6 +126,8 @@ def login_user(
             detail="Invalid email or password"
         )
 
+    # Generate a JWT token containing the user's ID.
+    # This token will be used for future authenticated requests.
     access_token = create_access_token(
     data={
         "user_id": existing_user.id
@@ -91,6 +139,14 @@ def login_user(
         "token_type": "bearer"
     }
 
+# Returns the profile information of the currently authenticated user.
+#
+# Requires a valid JWT token.
+#
+# Used by the frontend to:
+# - Display user information
+# - Determine user role
+# - Manage role-based access
 
 @router.get("/me")
 def get_me(

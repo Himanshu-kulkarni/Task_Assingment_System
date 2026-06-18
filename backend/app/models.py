@@ -6,6 +6,29 @@ from datetime import datetime, UTC
 class Base(DeclarativeBase):
     pass
 
+class College(Base):
+    __tablename__ = "colleges"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String, unique=True, nullable=False)
+
+    description = Column(String)
+
+    admin_id = Column(Integer, nullable=True)
+
+class Club(Base):
+    __tablename__ = "clubs"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String, nullable=False)
+
+    description = Column(String)
+
+    college_id = Column(Integer, nullable=False)
+
+    faculty_coordinator_id = Column(Integer, nullable=True)
 
 class User(Base):
     __tablename__ = "users"
@@ -20,6 +43,10 @@ class User(Base):
 
     role = Column(String, default="MEMBER")
 
+    #college_id = Column(Integer, nullable=True)
+
+    #club_id = Column(Integer, nullable=True)
+
     department_id = Column(Integer, nullable=True)
 
 class Department(Base):
@@ -32,6 +59,8 @@ class Department(Base):
     description = Column(String)
 
     lead_id = Column(Integer)
+
+    #club_id = Column(Integer, nullable=False)
 
 
 class Task(Base):
@@ -52,5 +81,7 @@ class Task(Base):
     assigned_to = Column(Integer, nullable = False)
 
     assigned_by = Column(Integer, nullable = False)
+
+    #club_id = Column(Integer, nullable=False)
 
     department_id = Column(Integer, nullable = False)
