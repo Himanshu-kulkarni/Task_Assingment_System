@@ -96,34 +96,6 @@ def assign_user_to_department(
         "message": "User assigned successfully"
     }
 
-# Returns all members belonging to a department.
-# Validates that the department exists before fetching users.
-
-@router.get(
-    "/departments/{department_id}/members",
-    response_model=list[UserResponse]
-)
-def get_department_members(
-    department_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    department = db.query(Department).filter(
-        Department.id == department_id
-    ).first()
-
-    if not department:
-        raise HTTPException(
-            status_code=404,
-            detail="Department not found"
-        )
-    
-    members = db.query(User).filter(
-        User.department_id == department_id
-    ).all()
-
-    return members
-
 # Assigns a department lead.
 # Only the PRESIDENT can promote a user as department lead.
 # Updates the department's lead_id.
