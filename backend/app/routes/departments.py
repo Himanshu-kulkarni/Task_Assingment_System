@@ -13,6 +13,10 @@ from app.dependencies import require_department_lead
 
 router = APIRouter()
 
+# Creates a new department in the club.
+# Only PRESIDENT and VICE_PRESIDENT can create departments.
+# Stores department name, description, and optional lead.
+
 @router.post("/departments")
 def create_department(
     department: DepartmentCreate,
@@ -38,6 +42,9 @@ def create_department(
         "message": "Department Created Successfully"
     }
 
+# Returns a list of all departments.
+# Any authenticated user can view departments.
+
 @router.get("/departments")
 def get_departments(
     db: Session = Depends(get_db),
@@ -47,6 +54,89 @@ def get_departments(
 
     return departments
 
+# President dashboard endpoint.
+# Accessible by PRESIDENT and VICE_PRESIDENT.
+# Provides organization-wide statistics including:
+# - Total departments
+# - Total users
+# - Total tasks
+# - Task status breakdown
+# - Per-department statistics
+
+@router.get("/dashboard/president")
+def president_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(["PRESIDENT", "VICE_PRESIDENT"])
+    )
+):
+    total_departments = db.query(Department).count()
+    total_users = db.query(User).count()
+    total_tasks = db.query(Task).count()
+
+    pending_tasks = db.query(Task).filter(
+        Task.status == "PENDING"
+    ).count()
+
+    completed_tasks = db.query(Task).filter(
+        Task.status == "COMPLETED"
+    ).count()
+
+    in_progress_tasks = db.query(Task).filter(
+        Task.status == "IN_PROGRESS"
+    ).count()
+
+    department_stats = []
+
+    departments = db.query(Department).all()
+
+    for department in departments:
+        members = db.query(User).filter(
+            User.department_id == department.id
+        ).count()
+
+        tasks = db.query(Task).filter(
+            Task.department_id == department.id
+        ).count()
+
+        department_stats.append({
+            "department_id": department.id,
+            "department_name": department.name,
+            "members": members,
+            "tasks": tasks
+        })
+
+    return {
+        "total_departments": total_departments,
+        "total_users": total_users,
+        "total_tasks": total_tasks,
+
+        "pending_tasks": pending_tasks,
+        "in_progress_tasks": in_progress_tasks,
+        "completed_tasks": completed_tasks,
+        "departments": department_stats
+    }
+
+@router.get("/departments/my-members")
+def get_my_department_members(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.department_id:
+        raise HTTPException(
+            status_code=400,
+            detail="You are not assigned to any department"
+        )
+    
+    members = db.query(User).filter(
+        User.department_id == current_user.department_id
+    ).all()
+    
+    return members
+
+# Assigns a user to a specific department.
+# Only PRESIDENT and VICE_PRESIDENT can perform this action.
+# Updates the user's department_id.
 
 @router.post("/departments/{department_id}/assign-user/{user_id}")
 def assign_user_to_department(
@@ -86,31 +176,9 @@ def assign_user_to_department(
         "message": "User assigned successfully"
     }
 
-
-@router.get(
-    "/departments/{department_id}/members",
-    response_model=list[UserResponse]
-)
-def get_department_members(
-    department_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    department = db.query(Department).filter(
-        Department.id == department_id
-    ).first()
-
-    if not department:
-        raise HTTPException(
-            status_code=404,
-            detail="Department not found"
-        )
-    
-    members = db.query(User).filter(
-        User.department_id == department_id
-    ).all()
-
-    return members
+# Assigns a department lead.
+# Only the PRESIDENT can promote a user as department lead.
+# Updates the department's lead_id.
 
 @router.post("/departments/{department_id}/assign-lead/{user_id}")
 def assign_department_lead(
@@ -147,6 +215,16 @@ def assign_department_lead(
     return {
         "message": "Department lead assigned successfully"
     }
+
+# Department dashboard endpoint.
+# PRESIDENT and VICE_PRESIDENT can access any department dashboard.
+# DEPARTMENT_LEAD can access only their own department dashboard.
+# Returns department statistics such as:
+# - Total members
+# - Total tasks
+# - Pending tasks
+# - In-progress tasks
+# - Completed tasks
 
 @router.get("/departments/{department_id}/dashboard")
 def department_dashboard(
@@ -209,59 +287,9 @@ def department_dashboard(
         "completed_tasks": completed_tasks
     }
 
-@router.get("/dashboard/president")
-def president_dashboard(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_role(["PRESIDENT", "VICE_PRESIDENT"])
-    )
-):
-    total_departments = db.query(Department).count()
-    total_users = db.query(User).count()
-    total_tasks = db.query(Task).count()
-
-    pending_tasks = db.query(Task).filter(
-        Task.status == "PENDING"
-    ).count()
-
-    completed_tasks = db.query(Task).filter(
-        Task.status == "COMPLETED"
-    ).count()
-
-    in_progress_tasks = db.query(Task).filter(
-        Task.status == "IN_PROGRESS"
-    ).count()
-
-    department_stats = []
-
-    departments = db.query(Department).all()
-
-    for department in departments:
-        members = db.query(User).filter(
-            User.department_id == department.id
-        ).count()
-
-        tasks = db.query(Task).filter(
-            Task.department_id == department.id
-        ).count()
-
-        department_stats.append({
-            "department_id": department.id,
-            "department_name": department.name,
-            "members": members,
-            "tasks": tasks
-        })
-
-    return {
-        "total_departments": total_departments,
-        "total_users": total_users,
-        "total_tasks": total_tasks,
-
-        "pending_tasks": pending_tasks,
-        "in_progress_tasks": in_progress_tasks,
-        "completed_tasks": completed_tasks,
-        "departments": department_stats
-    }
+# Returns members of a department.
+# PRESIDENT and VICE_PRESIDENT can view any department.
+# DEPARTMENT_LEAD can view only members of their own department.
 
 @router.get("/departments/{department_id}/members", response_model=list[UserResponse])
 def get_department_members(
