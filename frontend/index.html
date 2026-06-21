@@ -1009,10 +1009,6 @@
         <div><h2>Department Members</h2><p>View members in a department</p></div>
       </div>
       <div class="flex gap-2 mb-4">
-        <div class="form-group" style="margin:0;flex:0 0 180px;">
-          <input id="members-dept-id" type="number" placeholder="Department ID" />
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="loadMembers()">Load Members</button>
       </div>
       <div class="card">
         <div class="table-wrap">
@@ -1319,6 +1315,7 @@ function navigateTo(pageId) {
   if (pageId === 'my-tasks') loadMyTasks();
   if (pageId === 'created-tasks') loadCreatedTasks();
   if (pageId === 'departments') loadDepartments();
+  if (pageId === 'members') loadMembers();
   if (pageId === 'president-dash') loadPresidentDashboard();
 }
 
@@ -1658,12 +1655,10 @@ async function loadDeptDashboard() {
 }
 
 async function loadMembers() {
-  const deptId = document.getElementById('members-dept-id').value;
   const body   = document.getElementById('members-body');
-  if (!deptId) { body.innerHTML = `<tr><td colspan="5" class="error-msg" style="padding:12px 14px;">Enter a department ID above.</td></tr>`; return; }
   body.innerHTML = `<tr class="loading-row"><td colspan="5">Loading…</td></tr>`;
   try {
-    const members = await api('GET', `/departments/${deptId}/members`);
+    const members = await api('GET', `/departments/my-members`);
     body.innerHTML = members.length
       ? members.map(m => `
           <tr>
