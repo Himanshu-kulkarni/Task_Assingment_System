@@ -95,6 +95,51 @@ def create_task(
     db.refresh(new_task)
     return new_task
 
+# Returns all tasks assigned to the currently logged-in user.
+#
+# Used by members and department leads to view
+# their personal task list and workload.
+
+@router.get("/tasks/my-tasks", response_model = list[TaskResponse])
+def get_my_tasks(
+    db : Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    tasks = db.query(Task).filter(Task.assigned_to == current_user.id).all()
+    return tasks
+
+# Returns all tasks created by the currently logged-in user.
+#
+# Useful for:
+# - PRESIDENT
+# - VICE_PRESIDENT
+# - DEPARTMENT_LEAD
+#
+# Allows task creators to track tasks they have assigned.
+
+@router.get(
+    "/tasks/created-by-me",
+    response_model=list[TaskResponse]
+)
+def get_tasks_created_by_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    tasks = db.query(Task).filter(Task.assigned_by == current_user.id).all()
+    return tasks
+
+# Updates the status of a task.
+#
+# Access Rules:
+# - Only the user assigned to the task can update it.
+#
+# Supported statuses:
+# - PENDING
+# - IN_PROGRESS
+# - COMPLETED
+#
+# Prevents other users from modifying task progress.
+
 # Returns details of a specific task.
 #
 # Access Rules:
@@ -129,31 +174,6 @@ def get_task(
     
     return task
 
-# Returns all tasks assigned to the currently logged-in user.
-#
-# Used by members and department leads to view
-# their personal task list and workload.
-
-@router.get("/tasks/my-tasks", response_model = list[TaskResponse])
-def get_my_tasks(
-    db : Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    tasks = db.query(Task).filter(Task.assigned_to == current_user.id).all()
-    return tasks
-
-# Updates the status of a task.
-#
-# Access Rules:
-# - Only the user assigned to the task can update it.
-#
-# Supported statuses:
-# - PENDING
-# - IN_PROGRESS
-# - COMPLETED
-#
-# Prevents other users from modifying task progress.
-
 @router.patch("/tasks/{task_id}/status", response_model = TaskResponse)
 def update_task_status(
     task_id: int,
@@ -172,26 +192,6 @@ def update_task_status(
     db.commit()
     db.refresh(task)
     return task
-
-# Returns all tasks created by the currently logged-in user.
-#
-# Useful for:
-# - PRESIDENT
-# - VICE_PRESIDENT
-# - DEPARTMENT_LEAD
-#
-# Allows task creators to track tasks they have assigned.
-
-@router.get(
-    "/tasks/created-by-me",
-    response_model=list[TaskResponse]
-)
-def get_tasks_created_by_me(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    tasks = db.query(Task).filter(Task.assigned_by == current_user.id).all()
-    return tasks
 
 # Deletes a task from the system.
 #

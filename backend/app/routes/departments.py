@@ -54,6 +54,86 @@ def get_departments(
 
     return departments
 
+# President dashboard endpoint.
+# Accessible by PRESIDENT and VICE_PRESIDENT.
+# Provides organization-wide statistics including:
+# - Total departments
+# - Total users
+# - Total tasks
+# - Task status breakdown
+# - Per-department statistics
+
+@router.get("/dashboard/president")
+def president_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(["PRESIDENT", "VICE_PRESIDENT"])
+    )
+):
+    total_departments = db.query(Department).count()
+    total_users = db.query(User).count()
+    total_tasks = db.query(Task).count()
+
+    pending_tasks = db.query(Task).filter(
+        Task.status == "PENDING"
+    ).count()
+
+    completed_tasks = db.query(Task).filter(
+        Task.status == "COMPLETED"
+    ).count()
+
+    in_progress_tasks = db.query(Task).filter(
+        Task.status == "IN_PROGRESS"
+    ).count()
+
+    department_stats = []
+
+    departments = db.query(Department).all()
+
+    for department in departments:
+        members = db.query(User).filter(
+            User.department_id == department.id
+        ).count()
+
+        tasks = db.query(Task).filter(
+            Task.department_id == department.id
+        ).count()
+
+        department_stats.append({
+            "department_id": department.id,
+            "department_name": department.name,
+            "members": members,
+            "tasks": tasks
+        })
+
+    return {
+        "total_departments": total_departments,
+        "total_users": total_users,
+        "total_tasks": total_tasks,
+
+        "pending_tasks": pending_tasks,
+        "in_progress_tasks": in_progress_tasks,
+        "completed_tasks": completed_tasks,
+        "departments": department_stats
+    }
+
+@router.get("/departments/my-members")
+def get_my_department_members(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.department_id:
+        raise HTTPException(
+            status_code=400,
+            detail="You are not assigned to any department"
+        )
+    
+    members = db.query(User).filter(
+        User.department_id == current_user.department_id
+    ).all()
+    
+    return members
+
 # Assigns a user to a specific department.
 # Only PRESIDENT and VICE_PRESIDENT can perform this action.
 # Updates the user's department_id.
@@ -205,69 +285,6 @@ def department_dashboard(
         "pending_tasks": pending_tasks,
         "in_progress_tasks": in_progress_tasks,
         "completed_tasks": completed_tasks
-    }
-
-# President dashboard endpoint.
-# Accessible by PRESIDENT and VICE_PRESIDENT.
-# Provides organization-wide statistics including:
-# - Total departments
-# - Total users
-# - Total tasks
-# - Task status breakdown
-# - Per-department statistics
-
-@router.get("/dashboard/president")
-def president_dashboard(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_role(["PRESIDENT", "VICE_PRESIDENT"])
-    )
-):
-    total_departments = db.query(Department).count()
-    total_users = db.query(User).count()
-    total_tasks = db.query(Task).count()
-
-    pending_tasks = db.query(Task).filter(
-        Task.status == "PENDING"
-    ).count()
-
-    completed_tasks = db.query(Task).filter(
-        Task.status == "COMPLETED"
-    ).count()
-
-    in_progress_tasks = db.query(Task).filter(
-        Task.status == "IN_PROGRESS"
-    ).count()
-
-    department_stats = []
-
-    departments = db.query(Department).all()
-
-    for department in departments:
-        members = db.query(User).filter(
-            User.department_id == department.id
-        ).count()
-
-        tasks = db.query(Task).filter(
-            Task.department_id == department.id
-        ).count()
-
-        department_stats.append({
-            "department_id": department.id,
-            "department_name": department.name,
-            "members": members,
-            "tasks": tasks
-        })
-
-    return {
-        "total_departments": total_departments,
-        "total_users": total_users,
-        "total_tasks": total_tasks,
-
-        "pending_tasks": pending_tasks,
-        "in_progress_tasks": in_progress_tasks,
-        "completed_tasks": completed_tasks,
-        "departments": department_stats
     }
 
 # Returns members of a department.
