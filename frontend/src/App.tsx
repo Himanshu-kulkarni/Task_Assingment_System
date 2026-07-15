@@ -53,6 +53,7 @@ interface Department {
   name: string;
   description: string;
   lead_id: number | null;
+  club_id: number | null;
 }
 
 export default function App() {
