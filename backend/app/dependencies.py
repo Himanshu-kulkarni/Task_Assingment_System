@@ -30,7 +30,7 @@ def get_current_user(
         )
 
     user = db.query(User).filter(
-        User.id == payload["user_id"]
+        User.id == int(payload["sub"])
     ).first()
 
     if not user:

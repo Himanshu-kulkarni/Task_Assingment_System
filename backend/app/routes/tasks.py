@@ -60,6 +60,7 @@ def create_task(
     db : Session = Depends(get_db),
     current_user: User = Depends(
         require_role([
+            UserRole.FACULTY_COORDINATOR,
             UserRole.PRESIDENT,
             UserRole.VICE_PRESIDENT,
             UserRole.DEPARTMENT_LEAD
@@ -72,14 +73,44 @@ def create_task(
     if not assigned_user:
         raise HTTPException(status_code=404, detail="Assigned user not found")
     
-    if (
-        current_user.role == UserRole.DEPARTMENT_LEAD
-        and assigned_user.department_id != current_user.department_id
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="User does not belong to your department"
-        )
+    # 1. Faculty Coordinator constraints
+    if current_user.role == UserRole.FACULTY_COORDINATOR:
+        if assigned_user.role not in [UserRole.PRESIDENT, UserRole.VICE_PRESIDENT]:
+            raise HTTPException(
+                status_code=400,
+                detail="Faculty Coordinators can only assign tasks to the President or Vice President"
+            )
+        if assigned_user.club_id != current_user.club_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Assigned user does not belong to your club"
+            )
+            
+    # 2. President & Vice President constraints
+    elif current_user.role in [UserRole.PRESIDENT, UserRole.VICE_PRESIDENT]:
+        if assigned_user.role != UserRole.DEPARTMENT_LEAD:
+            raise HTTPException(
+                status_code=400,
+                detail="Executives can only assign tasks to Department Leads"
+            )
+        if assigned_user.club_id != current_user.club_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Assigned user does not belong to your club"
+            )
+            
+    # 3. Department Lead constraints
+    elif current_user.role == UserRole.DEPARTMENT_LEAD:
+        if assigned_user.role != UserRole.MEMBER:
+            raise HTTPException(
+                status_code=400,
+                detail="Department Leads can only assign tasks to Members"
+            )
+        if assigned_user.department_id != current_user.department_id:
+            raise HTTPException(
+                status_code=400,
+                detail="User does not belong to your department"
+            )
     
     new_task = Task(
         title = task.title,
@@ -87,7 +118,7 @@ def create_task(
         assigned_to = task.assigned_to,
         deadline = task.deadline,
         assigned_by = current_user.id,
-        department_id = current_user.department_id
+        department_id = assigned_user.department_id
     )
 
     db.add(new_task)
@@ -210,9 +241,10 @@ def delete_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(
         require_role([
-            "PRESIDENT",
-            "VICE_PRESIDENT",
-            "DEPARTMENT_LEAD"
+            UserRole.FACULTY_COORDINATOR,
+            UserRole.PRESIDENT,
+            UserRole.VICE_PRESIDENT,
+            UserRole.DEPARTMENT_LEAD
         ])
     )
 ):
@@ -221,17 +253,27 @@ def delete_task(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    if (
-        current_user.role not in [
-            UserRole.PRESIDENT,
-            UserRole.VICE_PRESIDENT
-        ]
-        and task.assigned_by != current_user.id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="Not authorized to delete this task"
-        )
+    # If it's a department lead, ensure they created the task AND the assignee belongs to their department
+    if current_user.role == UserRole.DEPARTMENT_LEAD:
+        if task.assigned_by != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to delete this task"
+            )
+        assignee = db.query(User).filter(User.id == task.assigned_to).first()
+        if not assignee or assignee.department_id != current_user.department_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to delete tasks of other department members"
+            )
+            
+    # If it's a Faculty Coordinator or Executive, ensure they assigned the task
+    elif current_user.role in [UserRole.FACULTY_COORDINATOR, UserRole.PRESIDENT, UserRole.VICE_PRESIDENT]:
+        if task.assigned_by != current_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to delete this task"
+            )
 
     db.delete(task)
     db.commit()
