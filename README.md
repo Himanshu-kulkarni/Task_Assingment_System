@@ -150,21 +150,21 @@ The database utilizes explicit foreign key relations and data constraints to pre
 
 ```mermaid
 erDiagram
-    COLLEGES ||--o| USERS : "representative_id"
-    COLLEGES ||--o{ CLUBS : "has"
-    CLUBS ||--o{ USERS : "members"
-    CLUBS ||--o{ DEPARTMENTS : "contains"
-    DEPARTMENTS ||--o| USERS : "lead_id"
-    DEPARTMENTS ||--o{ USERS : "has"
-    USERS ||--o{ TASKS : "assigned_to"
-    USERS ||--o{ TASKS : "assigned_by"
-    USERS ||--o{ APPLICATIONS : "applies"
-    CLUBS ||--o{ APPLICATIONS : "receives"
-    DEPARTMENTS ||--o{ APPLICATIONS : "receives"
+    COLLEGES ||--o| USERS : representative
+    COLLEGES ||--o{ CLUBS : has
+    CLUBS ||--o{ USERS : members
+    CLUBS ||--o{ DEPARTMENTS : contains
+    DEPARTMENTS ||--o| USERS : lead
+    DEPARTMENTS ||--o{ USERS : members
+    USERS ||--o{ TASKS : assigned
+    USERS ||--o{ TASKS : created
+    USERS ||--o{ APPLICATIONS : applies
+    CLUBS ||--o{ APPLICATIONS : receives
+    DEPARTMENTS ||--o{ APPLICATIONS : receives
 
     COLLEGES {
         int id PK
-        string name UK
+        string name
         string code
         string address
         string description
@@ -182,7 +182,7 @@ erDiagram
     USERS {
         int id PK
         string name
-        string email UK
+        string email
         string password_hash
         string role
         int college_id FK
@@ -192,7 +192,7 @@ erDiagram
 
     DEPARTMENTS {
         int id PK
-        string name UK
+        string name
         string description
         int club_id FK
         int lead_id FK
