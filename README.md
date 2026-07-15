@@ -329,8 +329,8 @@ sequenceDiagram
 ### Backend (`backend/.env`)
 | Variable | Description | Example |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | PostgreSQL connection string. | `postgresql://user:pass@localhost:5432/taskflow` |
-| `SECRET_KEY` | Hex token signing key (min 32 chars). | `9f2a7dbcc8039c3e387c2fb2d35817c76740ee3628ff3a89ee120d5885e3a890` |
+| `DATABASE_URL` | PostgreSQL connection string. | `postgresql://username:password@localhost:5432/dbname` |
+| `SECRET_KEY` | Hex token signing key (min 32 chars). | `your_cryptographically_secure_secret_key_here` |
 | `ALGORITHM` | Encryption algorithm. | `HS256` |
 
 ### Frontend (Render Env / Local `.env`)
