@@ -1,640 +1,482 @@
-<a id="top"></a>
-<div align="center">
+# TaskFlow
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=220&section=header&text=Task%20Assignment%20System&fontSize=46&fontColor=ffffff&animation=fadeIn&fontAlignY=36&desc=Role-Based%20Task%20%26%20Department%20Management%20API&descAlignY=58&descSize=19" width="100%"/>
+## Product Requirements Document (PRD)
 
-<img src="https://readme-typing-svg.demolab.com/?font=Fira+Code&size=20&pause=1000&color=667EEA&center=true&vCenter=true&width=620&lines=FastAPI+%2B+PostgreSQL+Backend;JWT+Authentication+%26+RBAC;Built+for+Organizations+%26+Teams" alt="Typing SVG" />
+TaskFlow is a role-based internal management platform for clubs and organizations. It enables teams to create departments, assign department leads, assign work to members, and track progress through a modern dashboard experience.
 
-<br/>
+This product is designed as a single-page, role-aware application. After authentication, the user enters one unified dashboard experience that changes completely based on their role.
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
-  <img src="https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
-</p>
-
-<p>
-  <img src="https://img.shields.io/badge/status-active%20development-success?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/scope-backend--only-blueviolet?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/license-MIT-yellow?style=for-the-badge" />
-</p>
-
-</div>
-
-<br/>
-
-## 📑 Table of Contents
-
-<details open>
-<summary>Click to expand / collapse</summary>
-
-- [Project Overview](#-project-overview)
-- [Features](#-features)
-- [System Architecture](#-system-architecture)
-- [Folder Structure](#-folder-structure)
-- [API Reference](#-api-reference)
-- [Authentication Flow](#-authentication-flow)
-- [Roles & Permissions](#-roles--permissions)
-- [Installation Guide](#-installation-guide)
-- [Running the Application](#-running-the-application)
-- [Roadmap](#-roadmap)
-- [Tech Stack](#-tech-stack)
-- [Author & Contributing](#-author--contributing)
-- [Contact & Support](#-contact--support)
-
-</details>
-
-<br/>
-
-## 📋 Project Overview
-
-> **Task Assignment System** is a robust RESTful backend API built with **FastAPI** and **PostgreSQL**. It provides a comprehensive task management and assignment solution, enabling organizations to efficiently assign, track, and manage tasks across different departments with role-based access control. The system features a hierarchical organizational structure, JWT-based authentication, and secure task workflow management.
-
-🛠️ This is currently a **backend-only project** providing RESTful API endpoints. The frontend application will be built separately in a future phase.
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+The frontend must be built to consume the existing FastAPI backend and PostgreSQL-backed APIs. The backend already exists and should not be redesigned.
 
 ---
 
-## ✨ Features
+## 1. Product Introduction
 
-<table>
-<tr>
-<td width="50%" valign="top">
+TaskFlow is intended for internal organizational use where work is distributed across departments and must be visible to the right stakeholders. The system focuses on clarity, accountability, and lightweight workflow management without introducing unnecessary process overhead.
 
-### 🔐 Authentication & Authorization
-- Secure JWT-based authentication
-- Bcrypt password hashing
-- Role-based access control (RBAC)
-- Token expiration & refresh mechanisms
+### Product Goal
+Provide a clean, modern, role-based dashboard that helps:
+- members view and update their assigned work,
+- department leads manage work inside their department,
+- presidents and vice presidents oversee the whole organization.
 
-### ✅ Task Management
-- Create, read, update, and delete tasks
-- Assign tasks to team members
-- Track task status (`Pending` → `In Progress` → `Completed`)
-- Set task deadlines
-- View tasks by assignment or creator
+### Core Value Proposition
+- One dashboard for all users
+- Role-based experience with no confusing multi-page navigation
+- Clear ownership of tasks
+- Department-level and organization-level visibility
+- Fast and professional interaction model for internal teams
 
-</td>
-<td width="50%" valign="top">
-
-### 🏢 Department Management
-- Create and organize departments
-- Assign department leads
-- Manage department members
-- Department-specific task organization
-
-### 👥 User Management
-- User registration and login
-- Department assignment
-- Role assignment
-- User profile retrieval
-
-</td>
-</tr>
-</table>
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### Primary Users
+- Super Admin (Platform level)
+- College Representative (College level)
+- Faculty Coordinator (Club level)
+- President (Club/Organization level)
+- Vice President (Club/Organization level)
+- Department Lead (Department level)
+- Member (Individual level)
 
 ---
 
-## 🏗️ System Architecture
+## 2. Product Vision
 
-```mermaid
-flowchart TB
-    subgraph API["🚀 FastAPI Backend Application"]
-        direction TB
-        AUTH["🔐 Authentication & Authorization<br/><sub>JWT Verification • Role Checking</sub>"]
-        ROUTES["🛣️ Route Handlers<br/><sub>Auth • Tasks • Departments</sub>"]
-        ORM["🗄️ SQLAlchemy ORM Layer<br/><sub>Database Abstraction</sub>"]
-        SCHEMA["📐 Pydantic Schemas<br/><sub>Request / Response Validation</sub>"]
-        AUTH --> ROUTES --> ORM --> SCHEMA
-    end
-    DB[("🐘 PostgreSQL Database<br/><sub>Users • Departments • Tasks</sub>")]
-    API -->|"psycopg2 driver<br/>SQL Queries"| DB
+TaskFlow should feel like a polished internal SaaS product: modern, minimal, calm, and highly functional.
 
-    style API fill:#667eea,stroke:#4c51bf,color:#ffffff
-    style DB fill:#336791,stroke:#1a365d,color:#ffffff
-```
+The experience should feel:
+- professional and trustworthy,
+- fast and lightweight,
+- visually refined,
+- responsive across desktop and tablet,
+- suitable for real organizational operations.
 
-### Key Components
+### Design Direction
+The UI should reflect a modern SaaS aesthetic inspired by:
+- Linear
+- Notion
+- GitHub
+- Vercel
+- Clerk Dashboard
 
-| # | Layer | Responsibility |
-|---|-------|-----------------|
-| 1 | 🔐 **Authentication Layer** | JWT token generation and verification |
-| 2 | 🛡️ **Authorization Layer** | Role-based access control middleware |
-| 3 | 🛣️ **API Routes** | RESTful endpoints for business operations |
-| 4 | 🗄️ **ORM Layer** | SQLAlchemy models for database abstraction |
-| 5 | 🐘 **Database** | PostgreSQL for persistent data storage |
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+The styling should avoid a Bootstrap-like appearance and should favor:
+- clean cards,
+- modern tables and data grids,
+- subtle shadows,
+- rounded corners,
+- soft spacing,
+- blue/purple accents,
+- dark mode support.
 
 ---
 
-## 📁 Folder Structure
+## 3. Core Product Behavior
 
-<details>
-<summary><strong>Click to view the full project tree</strong> 🌳</summary>
+### Authentication Flow
+1. User lands on the login experience.
+2. User authenticates using email and password.
+3. JWT token is stored securely on the client.
+4. User is redirected to the main dashboard experience.
 
-```
-Task_Assignment_System/
-├── README.md                          # Project documentation
-│
-└── backend/                           # Backend API application
-    ├── requirements.txt                # Python dependencies
-    ├── Email.txt                       # Email configuration
-    │
-    └── app/                            # Main FastAPI application package
-        ├── __init__.py                  # Package initialization
-        ├── main.py                      # FastAPI app setup & route registration
-        ├── database.py                  # PostgreSQL connection & session management
-        ├── dependencies.py              # Dependency injection (auth, role validation)
-        ├── models.py                    # SQLAlchemy ORM database models
-        ├── schemas.py                   # Pydantic request/response schemas
-        ├── roles.py                     # User role and permission definitions
-        ├── test_db.py                   # Database testing utilities
-        │
-        ├── routes/                      # RESTful API endpoint handlers
-        │   ├── auth.py                  # Authentication endpoints
-        │   ├── departments.py           # Department management endpoints
-        │   └── tasks.py                 # Task management endpoints
-        │
-        └── utils/                       # Utility functions and helpers
-            └── security.py              # Password hashing & JWT token operations
-```
+### Navigation Model
+There is only one page after login:
+- the Dashboard
 
-</details>
+The layout and available modules change based on the logged-in user's role.
 
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### User Experience Principle
+Every user should feel that the application is tailored to their responsibilities. The same app shell is reused, but the content and actions change based on role.
 
 ---
 
-## 🔌 API Reference
+## 4. User Roles and Permissions
+
+| Role | Scope | Key Responsibilities |
+| --- | --- | --- |
+| Super Admin | Platform-wide | Manage colleges (CRUD), assign College Representatives |
+| College Representative | College-wide | Manage clubs and oversee coordinator applications |
+| Faculty Coordinator | Club-wide | Oversee club operations, approve President/VP applications |
+| President / VP | Club-wide | Create departments, assign tasks to Leads, approve Lead applications |
+| Department Lead | Department-wide | Assign tasks to department members, approve Member applications |
+| Member | Individual | Complete tasks, view department details, apply to clubs/departments |
+
+### Super Admin
+Super Admins can:
+- Perform CRUD operations on colleges.
+- Automatically create/provision College Representative accounts.
+
+### College Representative
+College Representatives can:
+- View dashboard statistics for their specific college.
+- Register new clubs and delete existing clubs.
+- Review and approve/reject applications for **Faculty Coordinator** positions in their college.
+
+### Faculty Coordinator
+Faculty Coordinators can:
+- Oversee their specific club's user directory and dashboard.
+- Assign tasks to the President and Vice President of their club.
+- Review and approve/reject applications to become **President** and **Vice President** of their club.
+
+### President / Vice President
+Presidents and Vice Presidents can:
+- Create departments within their club.
+- Assign tasks to **Department Leads** within their club.
+- Review and approve/reject applications to become **Department Lead** of departments within their club.
+
+### Department Lead
+Department Leads can:
+- Assign tasks to **Members** of their own department.
+- Review and approve/reject applications to become a **Member** of their department.
+
+### Member
+Members can:
+- Browse clubs, expand club cards to view departments, and submit applications.
+- Track tasks assigned to them and update their status (Pending, In Progress, Completed).
+- Access a dedicated **"My Department"** page once assigned.
+
+---
+
+## 5. Dashboard Requirements
+
+The application should be built as a single dashboard shell with a sidebar navigation and a main content area. Role-based modules are displayed inside this shell.
+
+### Common Dashboard Shell
+The following shell should appear for all authenticated users:
+- Sidebar navigation
+- Top bar / header with user info and role context
+- Main content area for dashboard cards and data sections
+- Responsive layout for desktop and tablet
+
+### Member Dashboard
+The member dashboard must include:
+- Welcome Card
+- My Tasks
+- My Department
+- Department Members Popup or Modal
+
+### Department Lead Dashboard
+The department lead dashboard must include:
+- Welcome Card
+- Tasks Assigned To Me
+- Tasks Assigned By Me
+- Department Members
+- Assign Task Button
+- Department Analytics
+
+The Assign Task action should open a modal dialog.
+
+### President / Vice President Dashboard
+The executive dashboard must include:
+- Welcome Card
+- Tasks Assigned To Me
+- Tasks Assigned By Me
+- All Departments
+- Create Department Button
+- Organization Members
+- Organization Analytics
+
+The Create Department action should open a modal dialog.
+
+---
+
+## 6. Modal Requirements
+
+### Assign Task Modal
+Required fields:
+- Title
+- Description
+- Assign To
+- Deadline
+
+Behavior:
+- Should open from the department lead dashboard.
+- Should submit a task creation request to the backend.
+- Should validate required fields before submission.
+- Should close after success and refresh task lists.
+
+### Create Department Modal
+Required fields:
+- Department Name
+- Description
+- Department Lead
+
+Behavior:
+- Should open from the executive dashboard.
+- Should submit a department creation request to the backend.
+- Should refresh department lists after success.
+
+---
+
+## 7. Functional Requirements
+
+### Authentication
+- The app must provide login and registration flows.
+- The app must store a JWT access token after login.
+- The app must include the token in authenticated requests.
+- The app must display the current user's profile and role after authentication.
+
+### Dashboard Access
+- After login, the user must land on the dashboard.
+- The dashboard content must adapt based on the user's role.
+- The UI must prevent unauthorized actions using role-aware rendering and API validation.
+
+### Task Management
+- Users must be able to view tasks assigned to them.
+- Users must be able to update the status of tasks assigned to them.
+- Department leads and executives must be able to create new tasks.
+- Department leads must be restricted to assigning tasks only to users within their department.
+- Users must be able to view tasks they created.
+- Users must be able to delete tasks where permitted by the backend.
+
+### Department Management
+- Presidents and vice presidents must be able to create departments.
+- Presidents and vice presidents must be able to assign users to departments.
+- Presidents must be able to assign a department lead.
+- Department leads must be able to view their own department members and analytics.
+- Executives must be able to view all departments and organization members.
+
+### Data Views
+- The dashboard should display task lists in polished cards and tables.
+- Department and organization analytics should be presented as summary cards and charts.
+- Member and department details should be shown through clear, readable components.
+
+---
+
+## 8. Non-Functional Requirements
+
+### Performance
+- Dashboard content should load quickly and feel responsive.
+- The UI should avoid unnecessary page refreshes.
+- Data should be loaded progressively where appropriate.
+
+### Reliability
+- The frontend must handle API errors gracefully.
+- Failed requests should show clear user feedback.
+- The app must remain usable even when network issues occur.
+
+### Security
+- JWT tokens must be handled securely.
+- Protected routes must require authentication.
+- Role-based access should be enforced both in the UI and through API usage.
+
+### Usability
+- The interface must be intuitive for internal organizational users.
+- Important states such as empty tasks, loading states, and errors must be clearly visible.
+- The layout must feel polished and uncluttered.
+
+### Accessibility
+- Buttons, forms, and modals must be keyboard accessible.
+- Color contrast should remain readable.
+- Form labels and error states must be explicit.
+
+### Responsiveness
+- The UI must work well on desktop, tablet, and smaller screens.
+- Sidebar navigation should collapse or adapt gracefully on smaller viewports.
+
+---
+
+## 9. UI and Interaction Specification
+
+### Visual Style
+- Minimal and modern SaaS aesthetic
+- Soft backgrounds and subtle contrast
+- Rounded corners and soft shadows
+- Clear hierarchy across cards, headings, and tables
+- Blue and purple emphasis
+- Dark mode support
+
+### Layout Pattern
+- Sidebar for navigation and role context
+- Main content area for dashboard modules
+- Cards for metrics and summaries
+- Tables or data grids for tasks and members
+- Modals for task creation and department creation
+- Charts for analytics
+
+### Interaction Notes
+- Buttons should feel clear and deliberate.
+- Empty states should be designed thoughtfully.
+- The dashboard should feel calm rather than cluttered.
+- Status updates should be visible and immediate.
+
+---
+
+## 10. API Integration Notes
+
+The frontend must consume the existing FastAPI backend. The backend should remain unchanged.
 
 ### Authentication Endpoints
-
-| Method | Endpoint | Description | Access |
-|:------:|----------|-------------|:------:|
-| `POST` | `/register` | Register a new user | 🌐 Public |
-| `POST` | `/login` | Login and receive JWT token | 🌐 Public |
-| `GET` | `/me` | Get current user profile | 🔒 Authenticated |
+- POST /register
+- POST /login
+- GET /me
 
 ### Task Endpoints
-
-| Method | Endpoint | Description | Required Role |
-|:------:|----------|-------------|----------------|
-| `POST` | `/tasks` | Create a new task | President, VP, Dept Lead |
-| `GET` | `/tasks/{task_id}` | Get task details | Assignee/Creator, President, VP |
-| `GET` | `/tasks/my-tasks` | Get all assigned tasks | 🔒 Authenticated |
-| `GET` | `/tasks/created-by-me` | Get tasks created by user | 🔒 Authenticated |
-| `PATCH` | `/tasks/{task_id}/status` | Update task status | Task Assignee |
-| `DELETE` | `/tasks/{task_id}` | Delete a task | Creator, President, VP |
+- POST /tasks
+- GET /tasks/my-tasks
+- GET /tasks/created-by-me
+- GET /tasks/{task_id}
+- PATCH /tasks/{task_id}/status
+- DELETE /tasks/{task_id}
 
 ### Department Endpoints
+- POST /departments
+- GET /departments
+- GET /dashboard/president
+- GET /departments/my-members
+- GET /departments/my-dashboard
+- POST /departments/{department_id}/assign-user/{user_id}
+- POST /departments/{department_id}/assign-lead/{user_id}
+- GET /departments/{department_id}/dashboard
+- GET /departments/{department_id}/members
 
-| Method | Endpoint | Description | Required Role |
-|:------:|----------|-------------|----------------|
-| `POST` | `/departments` | Create a department | President, VP |
-| `GET` | `/departments` | List all departments | 🔒 Authenticated |
-| `POST` | `/departments/{id}/assign-user/{user_id}` | Assign user to department | President, VP |
-| `GET` | `/departments/{id}/members` | Get department members | 🔒 Authenticated |
+### Authentication Strategy
+- Use JWT bearer authentication.
+- Attach the token to requests as an Authorization header.
+- Store the token securely and include it in all protected requests.
 
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
-
----
-
-## 🔐 Authentication Flow
-
-The system uses **JWT (JSON Web Tokens)** for stateless authentication combined with **HTTP Bearer tokens** for secure API access.
-
-```mermaid
-sequenceDiagram
-    actor U as 🧑 User
-    participant API as 🚀 FastAPI
-    participant DB as 🐘 PostgreSQL
-
-    rect rgb(102, 126, 234)
-    Note over U,DB: 1️⃣ Registration
-    end
-    U->>API: POST /register
-    API->>API: Hash password (bcrypt)
-    API->>DB: Store new user
-    DB-->>API: user_id
-    API-->>U: 201 Created
-
-    rect rgb(118, 75, 162)
-    Note over U,DB: 2️⃣ Login
-    end
-    U->>API: POST /login
-    API->>DB: Verify email & password
-    DB-->>API: User verified
-    API->>API: Generate JWT (expires 1h)
-    API-->>U: access_token
-
-    rect rgb(72, 187, 120)
-    Note over U,DB: 3️⃣ Authenticated Request
-    end
-    U->>API: Request + Authorization: Bearer token
-    API->>API: Verify JWT signature
-    API->>DB: Load user by user_id
-    DB-->>API: User data
-    API-->>U: 200 OK + Response
-
-    rect rgb(245, 101, 101)
-    Note over U,DB: 4️⃣ Token Expired
-    end
-    U->>API: Request with expired token
-    API-->>U: 401 Unauthorized
-```
-
-### Security Features
-
-| Feature | Detail |
-|---------|--------|
-| 🔑 **Password Hashing** | Bcrypt with salt for secure storage |
-| ✍️ **JWT Signing** | HMAC-256 algorithm with `SECRET_KEY` |
-| ⏱️ **Token Expiration** | 1-hour validity period |
-| 🪪 **HTTP Bearer** | Standard authorization scheme for token transport |
-| 🌐 **CORS Configuration** | Restricted cross-origin requests |
-
-<details>
-<summary><strong>JWT Token Structure</strong></summary>
-
-```json
-{
-  "user_id": 1,
-  "exp": 1723456789,
-  "iat": 1723453189
-}
-```
-
-</details>
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### Frontend API Expectations
+- Use environment configuration for the API base URL.
+- Handle loading, success, and error states.
+- Refresh relevant data after mutations such as task creation, status change, department creation, or department assignment.
 
 ---
 
-## 👥 Roles & Permissions
+## 11. Suggested Frontend Folder Structure
 
-```mermaid
-graph TD
-    P["👑 PRESIDENT<br/><sub>Full system access</sub>"]
-    VP["🎖️ VICE PRESIDENT<br/><sub>Cross-department management</sub>"]
-    DL["🏅 DEPARTMENT LEAD<br/><sub>Department-level control</sub>"]
-    M["👤 MEMBER<br/><sub>Task execution</sub>"]
+The frontend implementation should follow a clean, scalable structure such as:
 
-    P --> VP --> DL --> M
-
-    style P fill:#f56565,stroke:#9b2c2c,color:#ffffff
-    style VP fill:#ed8936,stroke:#9c4221,color:#ffffff
-    style DL fill:#ecc94b,stroke:#975a16,color:#000000
-    style M fill:#48bb78,stroke:#22543d,color:#ffffff
+```text
+frontend/
+  src/
+    app/
+      routes/
+      layout/
+      providers/
+      store/
+    components/
+      ui/
+      layout/
+      dashboard/
+      tasks/
+      departments/
+      modals/
+    features/
+      auth/
+      dashboard/
+      tasks/
+      departments/
+    hooks/
+    lib/
+      api/
+      auth/
+      utils/
+    styles/
+    types/
+    constants/
+  public/
+  package.json
+  vite.config.ts
 ```
 
-### Permission Matrix
-
-| Feature | President | VP | Dept Lead | Member |
-|---------|:---------:|:--:|:---------:|:------:|
-| Register Users | ✅ | ✅ | ✅ | ✅ |
-| Create Tasks | ✅ | ✅ | ✅ (own dept) | ❌ |
-| Delete Tasks | ✅ | ✅ | ✅ (own) | ❌ |
-| Update Task Status | ✅ | ✅ | ✅ | ✅ (own) |
-| Create Departments | ✅ | ✅ | ❌ | ❌ |
-| Manage Users | ✅ | ✅ | ✅ (dept) | ❌ |
-| View All Tasks | ✅ | ✅ | ✅ (dept) | ✅ (own) |
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### Suggested Page Structure
+- Auth screen for login and registration
+- Single dashboard route for all authenticated users
+- Role-aware dashboard components rendered conditionally
+- Shared modal system for task and department creation
 
 ---
 
-## 🚀 Installation Guide
+## 12. Recommended UI Composition
 
-### Prerequisites
+### Authentication Experience
+- Clean centered auth card
+- Email and password form
+- Role-agnostic entry point
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-316192?logo=postgresql&logoColor=white)
-![pip](https://img.shields.io/badge/pip-package%20manager-yellow)
-![Git](https://img.shields.io/badge/Git-required-F05032?logo=git&logoColor=white)
+### Dashboard Experience
+- Sidebar navigation with role-relevant sections
+- Header with organization context and user profile
+- Summary cards and statistic widgets
+- Task tables and department lists
+- Charts for analytics
+- Modals for actions
 
-Also recommended: **Postman** or **cURL** for API testing.
-
-### 1️⃣ Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/Task_Assignment_System.git
-cd Task_Assignment_System
-```
-
-<details>
-<summary><strong>2️⃣ Create Python Virtual Environment</strong></summary>
-
-```bash
-cd backend
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS/Linux
-source venv/bin/activate
-```
-
-</details>
-
-<details>
-<summary><strong>3️⃣ Install Dependencies</strong></summary>
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-</details>
-
-<details>
-<summary><strong>4️⃣ Environment Configuration</strong></summary>
-
-Create a `.env` file in the `backend/` directory:
-
-```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/task_assignment_db
-
-# JWT Configuration
-SECRET_KEY=your-secret-key-here-use-strong-random-string
-ALGORITHM=HS256
-
-# Database Setup
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=task_assignment_db
-```
-
-</details>
-
-<details>
-<summary><strong>5️⃣ Create PostgreSQL Database</strong></summary>
-
-```bash
-psql -U postgres
-
-CREATE DATABASE task_assignment_db;
-
-# Optional: create a dedicated user
-CREATE USER task_user WITH PASSWORD 'secure_password';
-ALTER ROLE task_user SET client_encoding TO 'utf8';
-ALTER ROLE task_user SET default_transaction_isolation TO 'read committed';
-GRANT ALL PRIVILEGES ON DATABASE task_assignment_db TO task_user;
-
-\q
-```
-
-</details>
-
-<details>
-<summary><strong>6️⃣ Initialize Database</strong></summary>
-
-```bash
-cd app
-python test_db.py
-
-# Tables are also auto-created on app startup (see main.py)
-```
-
-</details>
-
-<details open>
-<summary><strong>7️⃣ Start the Backend Server</strong></summary>
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-🎉 The API will be live at `http://localhost:8000`, with auto-generated docs at `http://localhost:8000/docs`.
-
-</details>
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### Content Priority
+1. Welcome and role context
+2. Task visibility
+3. Department visibility
+4. Administrative actions
+5. Analytics and summary information
 
 ---
 
-## ▶ Running the Application
+## 13. Data Model Expectations
 
-```bash
-cd backend
+The UI should be built around the following concepts:
+- User
+- Department
+- Task
+- Role
+- Dashboard analytics
 
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
+### Task Object Expectations
+- id
+- title
+- description
+- status
+- created_at
+- deadline
+- assigned_to
+- assigned_by
+- department_id
 
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+### Department Object Expectations
+- id
+- name
+- description
+- lead_id
 
-| Resource | URL |
-|----------|-----|
-| 🌐 Backend API | `http://localhost:8000` |
-| 📘 Swagger UI | `http://localhost:8000/docs` |
-| 📗 ReDoc | `http://localhost:8000/redoc` |
-| 🏠 Root Endpoint | `http://localhost:8000/` |
-
-<details>
-<summary><strong>🧪 Testing with cURL</strong></summary>
-
-```bash
-# Register a new user
-curl -X POST http://localhost:8000/register \
-  -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com", "password": "securepass123"}'
-
-# Login
-curl -X POST http://localhost:8000/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "john@example.com", "password": "securepass123"}'
-
-# Get current user (requires token)
-curl -X GET http://localhost:8000/me \
-  -H "Authorization: Bearer {your_access_token}"
-```
-
-</details>
-
-<details>
-<summary><strong>📮 Testing with Postman</strong></summary>
-
-1. Import the API endpoints into Postman
-2. Set up environment variables for `base_url` and `access_token`
-3. Test each endpoint with appropriate headers and request bodies
-
-</details>
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+### User Object Expectations
+- id
+- name
+- email
+- role
+- department_id
 
 ---
 
-## 🔮 Roadmap
+## 14. Future Scope
 
-<details>
-<summary><strong>🟢 Phase 2 — Short Term</strong></summary>
-
-- [ ] **Email Notifications** — alerts for task assignments and deadline reminders
-- [ ] **Task Attachments** — file uploads on tasks
-- [ ] **Task Categories/Tags** — better task organization
-- [ ] **Search & Filtering** — advanced task search
-- [ ] **Task Comments** — collaboration on tasks
-- [ ] **Pagination** — handle large task lists efficiently
-
-</details>
-
-<details>
-<summary><strong>🟡 Phase 3 — Medium Term</strong></summary>
-
-- [ ] **Notifications Dashboard** — real-time notification system
-- [ ] **Task Templates** — pre-defined templates for recurring work
-- [ ] **Progress Analytics** — visual team-productivity dashboards
-- [ ] **Bulk Operations** — batch assign / bulk status updates
-- [ ] **Task Dependencies** — critical path analysis
-- [ ] **Calendar View** — calendar-based task visualization
-
-</details>
-
-<details>
-<summary><strong>🔵 Phase 4 — Long Term</strong></summary>
-
-- [ ] **Mobile Application** — native iOS/Android apps
-- [ ] **WebSocket Real-time Updates** — live updates without polling
-- [ ] **Integration APIs** — Slack, Teams, Jira
-- [ ] **Advanced Reporting** — exports to PDF/Excel
-- [ ] **AI-Powered Suggestions** — ML-based task recommendations
-- [ ] **Audit Logging** — complete activity trail
-- [ ] **Backup & Recovery** — automated database backups
-- [ ] **Multi-language Support** — i18n
-- [ ] **Dark Mode** — theme customization
-- [ ] **Performance Optimization** — caching & query tuning
-
-</details>
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+The following enhancements may be added in later versions:
+- notifications for task updates,
+- calendar-based task views,
+- drag-and-drop task boards,
+- richer analytics and reporting,
+- advanced filtering and search,
+- audit logs for administrative changes,
+- team settings and organization profile management,
+- dark/light theme switching with stronger customization.
 
 ---
 
-## 💻 Tech Stack
+## 15. Implementation Notes for the Frontend Builder
 
-<table>
-<tr>
-<td valign="top" width="34%">
+The frontend should be implemented as a polished, single-page experience that:
+- authenticates users,
+- reads the current user's role from the backend,
+- renders a role-specific dashboard,
+- uses the existing API endpoints without changing the backend,
+- supports task creation, updates, department creation, and member visibility,
+- feels like a premium internal productivity product.
 
-**Backend**
-- FastAPI
-- JWT (`python-jose`)
-- Bcrypt (`passlib`)
-- SQLAlchemy
-- PostgreSQL
-- Uvicorn
-- Pydantic
-- `python-dotenv`
-
-</td>
-<td valign="top" width="33%">
-
-**Frontend** *(future phase)*
-- React
-- Axios / Fetch API
-- Context API / Redux
-- Tailwind CSS / SCSS
-- Material-UI
-
-</td>
-<td valign="top" width="33%">
-
-**DevOps & Tools**
-- Git / GitHub
-- Docker *(optional)*
-- AWS / Heroku / DigitalOcean
-- VS Code
-- Postman / Insomnia
-- pgAdmin / DBeaver
-
-</td>
-</tr>
-</table>
-
-### 📸 Interactive API Documentation
-
-Once the backend is running:
-
-- **Swagger UI** → `http://localhost:8000/docs` — interactive endpoint testing with try-it-out
-- **ReDoc** → `http://localhost:8000/redoc` — clean schema visualization
-
-> *Frontend screenshots will be added after the React frontend is developed.*
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
+The frontend must not introduce extra pages for each user role. Instead, it should use one unified dashboard experience with conditional modules and actions.
 
 ---
 
-## 👤 Author & Contributing
+## 16. Summary
 
-<div align="center">
+TaskFlow is a modern internal organization platform for managing departments, users, and tasks through a highly role-aware dashboard experience. The product should be implemented as a clean, responsive, professional SaaS-style application that communicates trust, structure, and clarity.
 
-### Created by **Himanshu**
-
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/yourprofile)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your.email@example.com)
-
-</div>
-
-### 🤝 Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a feature branch — `git checkout -b feature/AmazingFeature`
-3. Commit your changes — `git commit -m 'Add some AmazingFeature'`
-4. Push to the branch — `git push origin feature/AmazingFeature`
-5. Open a Pull Request
-
-### 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-### 🙏 Acknowledgments
-
-FastAPI documentation & community • SQLAlchemy documentation • PostgreSQL documentation • React documentation • all contributors and users
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
-
----
-
-## 📞 Contact & Support
-
-| Channel | Link |
-|---------|------|
-| 🐛 Issues & Bug Reports | [GitHub Issues](https://github.com/yourusername/Task_Assignment_System/issues) |
-| 💡 Feature Requests | [GitHub Discussions](https://github.com/yourusername/Task_Assignment_System/discussions) |
-| 📧 Email | your.email@example.com |
-| 📚 Documentation | This README |
-
-### 📄 Additional Resources
-
-[FastAPI Docs](https://fastapi.tiangolo.com/) · [SQLAlchemy Docs](https://docs.sqlalchemy.org/) · [PostgreSQL Docs](https://www.postgresql.org/docs/) · [JWT Guide](https://jwt.io/introduction) · [React Docs](https://react.dev/)
-
-<p align="right">(<a href="#top">back to top ↑</a>)</p>
-
----
-
-<div align="center">
-
-**Last Updated**: June 17, 2024 &nbsp;|&nbsp; **Version**: 1.0.0
-
-Made by **Himanshu**
-
-⭐ **If you found this project helpful, please give it a star!** ⭐
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:764ba2,100:667eea&height=120&section=footer" width="100%"/>
-
-</div>
+The frontend should prioritize:
+- clarity of responsibilities,
+- role-based UI adaptation,
+- modern visual polish,
+- seamless interaction with the existing FastAPI backend.
